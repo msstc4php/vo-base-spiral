@@ -1,5 +1,16 @@
 # Integrations — Spiral Framework
 
+## Version range (verified 2026-11-12 UTC)
+
+| Package | Highest | Lowest (`--prefer-lowest --prefer-stable`) |
+|---|---|---|
+| `spiral/framework` | 3.18.2 | 3.18.0 |
+| `spiral/validator` | 1.8.0 | 1.8.0 |
+| `nyholm/psr7` (dev) | 1.8.2 | 1.8.0 |
+
+Both runs: 100 tests green. Spiral needs a concrete PSR-17 factory; `nyholm/psr7` is dev-only (laminas-diactoros 2.x
+refuses PHP 8.4).
+
 ## Bootloader
 
 `ValueObjectBootloader` (`DEPENDENCIES = [FiltersBootloader::class]`). Users list it in `Kernel::defineBootloaders()`;

@@ -20,7 +20,7 @@ permissions:
 
 env:
   COMPOSER: composer-ci.json
-  EXTENSIONS: mbstring, xml, ctype, iconv, intl
+  EXTENSIONS: mbstring, xml, ctype, iconv, intl, tokenizer
 
 jobs:
   templates:

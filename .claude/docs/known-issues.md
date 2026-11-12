@@ -1,5 +1,21 @@
 # Known issues
 
+## Bootloader order decides who owns the mapper binding
+
+`SINGLETONS` of a later bootloader overwrite earlier ones (no error). An application binding of `ValueObjectMapper`
+listed before `ValueObjectBootloader` is silently replaced by the plain mapper. The README says "after".
+
+## The `vo` checker needs ValidatorBootloader in the same bootloader list
+
+Registration checks `ConfiguratorInterface::exists('validator')` in `boot()`. ValidatorBootloader in a later
+`bootload()` call (the kernel's `APP` list while ours is in `defineBootloaders()`) is not yet initialized then, so
+`vo` is not registered and the rule fails with "Undefined checker `vo`". List both in the same method.
+
+## `git archive` drops the tests
+
+`.gitattributes` export-ignores `tests/`, `phpunit.xml.dist` and the tool configs: a lowest-deps copy made with
+`git archive` cannot run PHPUnit. Copy `git ls-files` instead.
+
 ## `spiral/composer-publish-plugin`
 
 `spiral/framework` requires a Composer plugin; `allow-plugins` sets it to `false` (a library publishes nothing).

@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 - unreleased
+## 0.1.0 - 2026-11-12
 
 First release. New integration, so no stability promise before 1.0.
 
@@ -15,3 +15,4 @@ First release. New integration, so no stability promise before 1.0.
 - `Validation\ValueObjectChecker`: the `spiral/validator` rule `['vo:valid', EmailAddress::class]`; `null` and `''`
   pass, a trusted-source-only or unsupported class is a `LogicException`. Registered under `vo` when
   `ValidatorBootloader` is loaded.
+- Requires `msstc4php/vo-base` ^1.1, `spiral/framework` ^3.18, PHP >= 8.4; `spiral/validator` ^1.8 optional.

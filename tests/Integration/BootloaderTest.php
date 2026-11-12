@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace MSSTC4PHP\ValueObject\Spiral\Tests\Integration;
 
+use MSSTC4PHP\ValueObject\Network\QueryParameter;
 use MSSTC4PHP\ValueObject\Payload\ValueObjectMapper;
 use MSSTC4PHP\ValueObject\Spiral\Bootloader\ValueObjectBootloader;
 use MSSTC4PHP\ValueObject\Spiral\Filter\ValueObjectCaster;
+use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Codec\CodecBootloader;
+use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Filter\CastTarget;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Kernel\TestKernel;
 use MSSTC4PHP\ValueObject\Spiral\Validation\ValueObjectChecker;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
+use ReflectionNamedType;
+use ReflectionProperty;
 use Spiral\Config\ConfiguratorInterface;
 use Spiral\Filters\Model\FilterProviderInterface;
 use Spiral\Filters\Model\Mapper\CasterRegistryInterface;
@@ -21,6 +26,7 @@ use Spiral\Validator\Config\ValidatorConfig;
 
 #[CoversClass(ValueObjectBootloader::class)]
 #[UsesClass(ValueObjectCaster::class)]
+#[UsesClass(ValueObjectChecker::class)]
 final class BootloaderTest extends TestCase
 {
     public function testTheMapperIsAContainerSingleton(): void
@@ -73,5 +79,22 @@ final class BootloaderTest extends TestCase
         self::assertInstanceOf(ConfiguratorInterface::class, $config);
 
         self::assertFalse($config->exists(ValidatorConfig::CONFIG));
+    }
+
+    public function testAMapperReboundByALaterBootloaderReachesTheCasterAndTheChecker(): void
+    {
+        $container = TestKernel::boot([ValidatorBootloader::class, ValueObjectBootloader::class, CodecBootloader::class]);
+
+        $registry = $container->get(CasterRegistryInterface::class);
+        self::assertInstanceOf(CasterRegistryInterface::class, $registry);
+        $caster = $registry->getCasters()[array_key_last($registry->getCasters())] ?? null;
+        $type = new ReflectionProperty(CastTarget::class, 'parameter')->getType();
+        $checker = $container->get(ValueObjectChecker::class);
+
+        self::assertInstanceOf(ValueObjectCaster::class, $caster);
+        self::assertInstanceOf(ReflectionNamedType::class, $type);
+        self::assertTrue($caster->supports($type));
+        self::assertInstanceOf(ValueObjectChecker::class, $checker);
+        self::assertTrue($checker->valid('{"name":"page","value":"2"}', QueryParameter::class));
     }
 }
