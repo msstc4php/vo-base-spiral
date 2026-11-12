@@ -35,3 +35,23 @@ Spiral core has no package auto-discovery.
   The client sees `NotFoundException('Not found')`; our message is only the previous exception.
 - A class-typed parameter absent from the matches is autowired from the container by Spiral; the interceptor does not
   touch absent arguments.
+
+## Validation: the checker
+
+- `ValidatorBootloader::init()` sets the `validator` config defaults (checkers, conditions, aliases);
+  `addChecker()` is just `ConfiguratorInterface::modify('validator', new Append('checkers', $alias, $class))`. The
+  bootloader does that itself in `boot()` when `ConfiguratorInterface::exists('validator')` — true once
+  ValidatorBootloader's init ran (all inits of one `bootload()` call precede all boots) or an `app/config/validator.php`
+  exists. Without it nothing is touched (`modify()` on a missing section would try to load the file and fail).
+- Rules: `RuleParser::parseArgs()` drops index 0 but keeps the other indexes, so `['vo:valid', Foo::class]` gives
+  `$args = [1 => Foo::class]`. `AbstractChecker::check()` `array_unshift`s the value, which reindexes: `valid($value,
+  $class)`. `getMessage()` receives the un-reindexed `[1 => Foo::class]` — hence `reset()`.
+- `RulesProvider` builds checkers through `Autowire` → container, so the bound mapper is injected.
+- `AbstractValidator::validate()` skips a rule only when the field is **absent** and `ignoreEmpty()` says so; present
+  values (including `'0'`, `''`, `null` sent explicitly) always reach the rule. `ALLOW_EMPTY_VALUES = ['valid']`
+  makes absent fields reach it too, so a misconfigured class fails on the first request.
+- The validator validates the raw input data (`FilterBag` → `SchematicEntity`), not the property values: the checker
+  sees the client's string even when the property is typed with the value object.
+- A rule's own message (`['vo:valid', Foo::class, 'error' => '...']`) replaces ours (`CheckerRule::getMessage()`).
+- Messages go through `TranslatorTrait::say()`: `[[...]]` stripped, `{type}` interpolated; translated when a
+  `TranslatorInterface` is bound in the current container scope.

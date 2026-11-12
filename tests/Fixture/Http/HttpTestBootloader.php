@@ -55,6 +55,7 @@ final class HttpTestBootloader extends Bootloader
         $http->addMiddleware(ValidationHandlerMiddleware::class);
 
         $router->setRoute('signup', new Route('/signup', new Action(FilterController::class, 'signup')));
+        $router->setRoute('contact', new Route('/contact', new Action(FilterController::class, 'contact')));
 
         foreach ([
             'email' => '/users/<email>',
