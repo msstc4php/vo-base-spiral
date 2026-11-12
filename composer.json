@@ -1,0 +1,73 @@
+{
+    "name": "msstc4php/vo-base-spiral",
+    "description": "Spiral Framework filters, route arguments and validation for msstc4php/vo-base value objects.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "value-object",
+        "spiral",
+        "filters",
+        "interceptor",
+        "validation",
+        "bridge",
+        "ddd"
+    ],
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/msstc4php/vo-base"
+        }
+    ],
+    "require": {
+        "php": ">=8.4",
+        "msstc4php/vo-base": "^1.1",
+        "spiral/framework": "^3.18"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.76",
+        "nyholm/psr7": "^1.8",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "phpunit/phpunit": ">=11.0",
+        "rector/rector": "^2.1",
+        "roave/security-advisories": "dev-latest",
+        "spiral/validator": "^1.8"
+    },
+    "suggest": {
+        "msstc4php/vo-base-cycle": "Stores value objects in Cycle ORM entities",
+        "spiral/validator": "Enables the vo:valid checker"
+    },
+    "autoload": {
+        "psr-4": {
+            "MSSTC4PHP\\ValueObject\\Spiral\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "MSSTC4PHP\\ValueObject\\Spiral\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "phpstan/extension-installer": true,
+            "spiral/composer-publish-plugin": false
+        },
+        "sort-packages": true
+    },
+    "authors": [
+        {
+            "name": "Maxim Shamaev",
+            "email": "maxim.shamaev@gmail.com"
+        }
+    ],
+    "extra": {
+        "bundle-standard": {
+            "kind": "library",
+            "runtime": "php84"
+        }
+    }
+}
