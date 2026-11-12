@@ -121,6 +121,7 @@ final class ValueObjectCasterTest extends TestCase
             self::fail('Expected a SetterException.');
         } catch (SetterException $exception) {
             self::assertSame($message, $exception->getMessage());
+            self::assertStringNotContainsString('MSSTC4PHP', $exception->getMessage());
             self::assertThat($exception->getPrevious(), self::logicalOr(
                 self::isInstanceOf(InvalidValueObjectException::class),
                 self::isInstanceOf(JsonException::class),
@@ -128,12 +129,22 @@ final class ValueObjectCasterTest extends TestCase
         }
     }
 
-    public function testATrustedSourceOnlyClassIsRefusedWhateverTheInput(): void
+    /**
+     * @return iterable<string, array{string, mixed}>
+     */
+    public static function trustedSourceOnlyInput(): iterable
+    {
+        yield 'a payload' => ['nickname', ['value' => 'jane', 'minLength' => 0, 'maxLength' => 4]];
+        yield 'an empty string on a nullable property' => ['optionalNickname', ''];
+    }
+
+    #[DataProvider('trustedSourceOnlyInput')]
+    public function testATrustedSourceOnlyClassIsRefusedWhateverTheInput(string $property, mixed $value): void
     {
         $this->expectException(SetterException::class);
         $this->expectExceptionMessage('A bounded string cannot be read from request input.');
 
-        $this->cast(new CastTarget(), 'nickname', ['value' => 'jane', 'minLength' => 0, 'maxLength' => 4]);
+        $this->cast(new CastTarget(), $property, $value);
     }
 
     /**

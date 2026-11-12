@@ -55,15 +55,15 @@ final readonly class ValueObjectCaster implements CasterInterface
             return;
         }
 
+        $label = TypeLabel::of($class);
+        if (!$this->mapper->supportsUntrusted($class)) {
+            throw new SetterException(message: \sprintf('A %s cannot be read from request input.', $label));
+        }
+
         if ($value === '' && $type->allowsNull()) {
             $property->setValue($filter, null);
 
             return;
-        }
-
-        $label = TypeLabel::of($class);
-        if (!$this->mapper->supportsUntrusted($class)) {
-            throw new SetterException(message: \sprintf('A %s cannot be read from request input.', $label));
         }
 
         try {

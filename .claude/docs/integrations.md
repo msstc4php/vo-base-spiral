@@ -23,7 +23,8 @@ Spiral core has no package auto-discovery.
   registration order — first `supports(ReflectionNamedType)` wins — and falls back to `DefaultCaster`. Union and
   intersection types never reach a caster.
 - `FiltersBootloader::initCasterRegistry()` builds the registry with `EnumCaster` and `UuidCaster`; `register()` keys
-  by class and appends, so `ValueObjectCaster` comes last. It never claims enums, so order does not matter.
+  by class and appends, so `ValueObjectCaster` comes last. It never claims enums, so order does not matter — and it
+  cannot be made to come first without replacing the registry (see known-issues).
 - A `SetterException` becomes the property's error (message = exception message, unless the property has
   `#[CastingErrorMessage]`); the property stays uninitialized. With errors, `ValidateFilterInterceptor` throws
   `ValidationException` (code 422) — with or without a `FilterDefinition` — and `ValidationHandlerMiddleware` +
@@ -53,7 +54,7 @@ Spiral core has no package auto-discovery.
   `addChecker()` is just `ConfiguratorInterface::modify('validator', new Append('checkers', $alias, $class))`. The
   bootloader does that itself in `boot()` when `ConfiguratorInterface::exists('validator')` — true once
   ValidatorBootloader's init ran (all inits of one `bootload()` call precede all boots) or an `app/config/validator.php`
-  exists. Without it nothing is touched (`modify()` on a missing section would try to load the file and fail).
+  exists; otherwise it retries once in `Kernel::appBooted()` / `AbstractKernel::booted()`. Without it nothing is touched (`modify()` on a missing section would try to load the file and fail).
 - Rules: `RuleParser::parseArgs()` drops index 0 but keeps the other indexes, so `['vo:valid', Foo::class]` gives
   `$args = [1 => Foo::class]`. `AbstractChecker::check()` `array_unshift`s the value, which reindexes: `valid($value,
   $class)`. `getMessage()` receives the un-reindexed `[1 => Foo::class]` — hence `reset()`.

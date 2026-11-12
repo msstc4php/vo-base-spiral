@@ -15,7 +15,13 @@ exception stays as the previous exception for logs.
 
 `LogicException` naming `$arg` and `Class::method()` with the reason; checked only when the argument is present and
 not already an instance (an absent one is Spiral's to resolve). Trust is checked before compositeness, so
-`BoundedString` gets the "carries its own constraints" reason.
+`BoundedString` gets the "carries its own constraints" reason. Backed enums are bindable (they are one string), so
+the composite check exempts them.
+
+## Trust before emptiness
+
+The caster checks `supportsUntrusted()` before the `''`-on-nullable shortcut: a `BoundedString` property refuses
+every input, `''` included. The interceptor and the checker check trust first as well.
 
 ## Tests
 
@@ -27,3 +33,5 @@ not already an instance (an absent one is Spiral's to resolve). Trust is checked
   application answers. Each test boots a fresh kernel (~5 ms).
 - Infection's initial coverage run covers the integration suite too; mutants are killed by the unit suite, so every
   branch of `src/` has a unit test.
+- Validator-dependent tests carry `#[RequiresMethod(ValidatorBootloader::class, 'addChecker')]`; CI's
+  `without-validator` job removes `spiral/validator` and runs the rest.

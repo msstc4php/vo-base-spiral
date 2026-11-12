@@ -17,11 +17,14 @@ use MSSTC4PHP\ValueObject\Spiral\Internal\TypeLabel;
 use MSSTC4PHP\ValueObject\Spiral\Validation\ValueObjectChecker;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresMethod;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
+use Spiral\Validator\Bootloader\ValidatorBootloader;
 
 #[CoversClass(ValueObjectChecker::class)]
 #[UsesClass(TypeLabel::class)]
+#[RequiresMethod(ValidatorBootloader::class, 'addChecker')]
 final class ValueObjectCheckerTest extends TestCase
 {
     /**

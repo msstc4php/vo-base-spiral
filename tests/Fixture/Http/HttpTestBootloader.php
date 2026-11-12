@@ -21,6 +21,7 @@ use Spiral\Filter\ValidationHandlerMiddleware;
 use Spiral\Http\Middleware\ErrorHandlerMiddleware;
 use Spiral\Interceptors\Handler\AutowireHandler;
 use Spiral\Interceptors\PipelineBuilder;
+use Spiral\Router\Loader\Configurator\RoutingConfigurator;
 use Spiral\Router\Route;
 use Spiral\Router\RouterInterface;
 use Spiral\Router\Target\Action;
@@ -50,12 +51,14 @@ final class HttpTestBootloader extends Bootloader
         RouterInterface $router,
         ContainerInterface $container,
         ValueObjectArgumentsInterceptor $interceptor,
+        RoutingConfigurator $routes,
     ): void {
         $http->addMiddleware(ErrorHandlerMiddleware::class);
         $http->addMiddleware(ValidationHandlerMiddleware::class);
 
         $router->setRoute('signup', new Route('/signup', new Action(FilterController::class, 'signup')));
         $router->setRoute('contact', new Route('/contact', new Action(FilterController::class, 'contact')));
+        $router->setRoute('readme-contact', new Route('/readme-contact', new Action(FilterController::class, 'readmeContact')));
 
         foreach ([
             'email' => '/users/<email>',
@@ -72,5 +75,6 @@ final class HttpTestBootloader extends Bootloader
 
         $pipeline = new PipelineBuilder()->withInterceptors($interceptor)->build(new AutowireHandler($container));
         $router->setRoute('per-route', new Route('/per-route/users/<email>', new Action(RouteController::class, 'email')->withHandler($pipeline)));
+        $routes->add('configured', '/configured/users/<email>')->action(RouteController::class, 'email')->core($pipeline);
     }
 }

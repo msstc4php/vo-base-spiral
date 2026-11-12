@@ -31,7 +31,7 @@ Neither this package nor the core is on Packagist yet, so register both GitHub r
 
 Requires PHP >= 8.4 and `spiral/framework` ^3.18. `spiral/validator` ^1.8 is optional (the `vo:valid` rule).
 
-Spiral has no package auto-discovery: add the bootloader to your kernel, after `ValidatorBootloader` if you use it:
+Spiral has no package auto-discovery: add the bootloader to your kernel:
 
 ```php
 use MSSTC4PHP\ValueObject\Spiral\Bootloader\ValueObjectBootloader;
@@ -51,7 +51,7 @@ final class Kernel extends \Spiral\Framework\Kernel
 ```
 
 `ValueObjectBootloader` loads `FiltersBootloader`, binds `ValueObjectMapper` as a singleton, registers the filter
-caster and — when `ValidatorBootloader` is loaded in the same list — the `vo` checker.
+caster and — when `ValidatorBootloader` is loaded, in this list or in `defineAppBootloaders()` — the `vo` checker.
 
 ### Custom codecs
 
@@ -115,7 +115,10 @@ With Spiral's `ValidationHandlerMiddleware` in the pipeline, `{"email": "nope", 
   nullable property `null` and is invalid for a non-nullable one. An instance of the class is kept as it is.
 - `BoundedString` is always refused ("A bounded string cannot be read from request input."): its payload would let
   the client choose the bounds. Type the property `string` and validate the length instead, or use `NonEmptyString`.
-- Backed enums (`CountryCode`, ...) stay with Spiral's own `EnumCaster`.
+- Backed enums (`CountryCode`, ...) stay with Spiral's own `EnumCaster`, which registers first and cannot be
+  reordered without replacing Spiral's caster registry. Its error text is Spiral's: "Unable to set enum value." followed
+  by PHP's `from()` message, which names the enum class. Put `#[CastingErrorMessage('Not a valid country.')]` on an
+  enum property whose errors reach clients.
 - `#[CastingErrorMessage('...')]` on a property replaces the message, as for any Spiral caster.
 
 ## Route arguments
@@ -166,13 +169,13 @@ $router->setRoute('user', new Route('/users/<email>', new Action(UserController:
 // or with the routing configurator: $routes->add('user', '/users/<email>')->action(...)->core($pipeline);
 ```
 
-- Arguments bind by name, exactly as Spiral binds route parameters. Only scalar-backed value objects: a route
-  parameter is one string. An argument typed with a composite (`GeoCoordinates`) or a trusted-source-only class
+- Arguments bind by name, exactly as Spiral binds route parameters. Scalar-backed value objects and backed enums
+  (`/countries/<country>` → `CountryCode $country`; an unknown case is a 404): a route parameter is one string. An argument typed with a composite (`GeoCoordinates`) or a trusted-source-only class
   (`BoundedString`) is a `LogicException` naming the argument — a programmer error, found on the first request.
 - `null` (an absent optional segment, `/users[/<email>]`) stays `null`, so `?EmailAddress $email = null` works; `''`
   is `null` for a nullable argument and a 404 otherwise. An argument that already is an instance passes through.
-- Union types (`EmailAddress|string $id`), builtins and backed enums are left to Spiral. Spiral itself does not
-  convert a string into a backed enum argument (it answers 400).
+- Union types (`EmailAddress|string $id`) and builtins are left to Spiral. Without the interceptor Spiral answers 400
+  for a string in a value-object or backed-enum argument.
 
 ## Validation rule
 

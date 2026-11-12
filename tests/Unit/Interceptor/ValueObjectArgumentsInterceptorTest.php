@@ -6,6 +6,7 @@ namespace MSSTC4PHP\ValueObject\Spiral\Tests\Unit\Interceptor;
 
 use LogicException;
 use MSSTC4PHP\ValueObject\Exception\InvalidValueObjectException;
+use MSSTC4PHP\ValueObject\I18n\CountryCode;
 use MSSTC4PHP\ValueObject\Identity\EmailAddress;
 use MSSTC4PHP\ValueObject\Network\Port;
 use MSSTC4PHP\ValueObject\Payload\ValueObjectMapper;
@@ -29,6 +30,11 @@ final class ValueObjectArgumentsInterceptorTest extends TestCase
     {
         self::assertEquals(['email' => EmailAddress::from('jane@example.com')], $this->intercept('email', ['email' => 'jane@example.com']));
         self::assertEquals(['port' => Port::from(8080)], $this->intercept('port', ['port' => '8080']));
+    }
+
+    public function testABackedEnumArgumentBecomesTheCase(): void
+    {
+        self::assertSame(['country' => CountryCode::DE], $this->intercept('country', ['country' => 'DE']));
     }
 
     public function testTheOtherArgumentsAndAttributesAreKept(): void
@@ -55,7 +61,6 @@ final class ValueObjectArgumentsInterceptorTest extends TestCase
         yield 'absent' => ['email', []];
         yield 'null' => ['optional', ['email' => null]];
         yield 'union type' => ['union', ['id' => 'nope']];
-        yield 'backed enum' => ['country', ['country' => 'XX']];
         yield 'builtin' => ['plain', ['name' => 'jane']];
         yield 'positional, not by name' => ['email', [0 => 'nope']];
     }
@@ -83,6 +88,7 @@ final class ValueObjectArgumentsInterceptorTest extends TestCase
         yield 'invalid content' => ['email', ['email' => 'nope']];
         yield 'empty string for a non-nullable argument' => ['email', ['email' => '']];
         yield 'not a canonical integer' => ['port', ['port' => '08080']];
+        yield 'unknown enum case' => ['country', ['country' => 'XX']];
     }
 
     /**

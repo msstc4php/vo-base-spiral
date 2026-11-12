@@ -17,6 +17,7 @@ use MSSTC4PHP\ValueObject\Spiral\Validation\ValueObjectChecker;
 use Nyholm\Psr7\ServerRequest;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresMethod;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
@@ -32,6 +33,7 @@ use Spiral\Validator\FilterDefinition;
 #[UsesClass(ValueObjectBootloader::class)]
 #[UsesClass(ValueObjectCaster::class)]
 #[UsesClass(TypeLabel::class)]
+#[RequiresMethod(ValidatorBootloader::class, 'addChecker')]
 final class CheckerTest extends TestCase
 {
     public function testValidInputPasses(): void
@@ -67,6 +69,31 @@ final class CheckerTest extends TestCase
 
         self::assertSame(422, $response->getStatusCode());
         self::assertSame(['errors' => ['email' => 'The value is not a valid email address.']], json_decode((string) $response->getBody(), true, flags: \JSON_THROW_ON_ERROR));
+    }
+
+    /**
+     * @return iterable<string, array{array<string, mixed>, int, array<string, mixed>}>
+     */
+    public static function readmeExample(): iterable
+    {
+        yield 'valid' => [['email' => 'jane@example.com'], 200, ['email' => ['type' => 'string', 'value' => 'jane@example.com']]];
+        yield 'invalid' => [['email' => 'nope'], 422, ['errors' => ['email' => 'The value is not a valid email address.']]];
+        yield 'missing, required speaks' => [[], 422, ['errors' => ['email' => 'This value is required.']]];
+    }
+
+    /**
+     * @param array<string, mixed> $body
+     * @param array<string, mixed> $expected
+     */
+    #[DataProvider('readmeExample')]
+    public function testTheReadmeExampleWorksAsDocumented(array $body, int $status, array $expected): void
+    {
+        $container = TestKernel::boot([ValidatorBootloader::class, ValueObjectBootloader::class, HttpTestBootloader::class]);
+
+        $response = TestKernel::handle($container, new ServerRequest('POST', '/readme-contact')->withParsedBody($body));
+
+        self::assertSame($status, $response->getStatusCode());
+        self::assertSame($expected, json_decode((string) $response->getBody(), true, flags: \JSON_THROW_ON_ERROR));
     }
 
     /**

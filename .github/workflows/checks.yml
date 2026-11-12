@@ -83,7 +83,22 @@ jobs:
       - run: composer update --prefer-dist --no-progress --no-interaction ${{ matrix.dependencies == 'lowest' && '--prefer-lowest --prefer-stable' || '' }}
       - run: vendor/bin/phpunit
 
-  bc-check:
+  without-validator:
+    name: PHPUnit without spiral/validator
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: ${{ env.EXTENSIONS }}
+          coverage: none
+          tools: composer:v2
+      - run: composer remove --dev spiral/validator --no-update --no-interaction
+      - run: composer update --prefer-dist --no-progress --no-interaction
+      # The validator tests skip themselves; the bootloader, filter and interceptor suites must pass without it.
+      - run: vendor/bin/phpunit
+
     name: BC check (Roave)
     runs-on: ubuntu-latest
     steps:

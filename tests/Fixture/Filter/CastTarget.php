@@ -30,6 +30,8 @@ final class CastTarget extends Filter
 
     public BoundedString $nickname;
 
+    public ?BoundedString $optionalNickname = null;
+
     public CountryCode $country;
 
     public QueryParameter $parameter;

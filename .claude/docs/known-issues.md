@@ -5,11 +5,15 @@
 `SINGLETONS` of a later bootloader overwrite earlier ones (no error). An application binding of `ValueObjectMapper`
 listed before `ValueObjectBootloader` is silently replaced by the plain mapper. The README says "after".
 
-## The `vo` checker needs ValidatorBootloader in the same bootloader list
+## ValidatorBootloader may sit in another bootloader list
 
-Registration checks `ConfiguratorInterface::exists('validator')` in `boot()`. ValidatorBootloader in a later
-`bootload()` call (the kernel's `APP` list while ours is in `defineBootloaders()`) is not yet initialized then, so
-`vo` is not registered and the rule fails with "Undefined checker `vo`". List both in the same method.
+`boot()` sees `ConfiguratorInterface::exists('validator')` only if ValidatorBootloader was initialized by the same or
+an earlier `bootload()` call. When it is not yet (ours in `defineBootloaders()`, ValidatorBootloader in
+`defineAppBootloaders()`), registration is deferred to `Kernel::appBooted()` (`AbstractKernel::booted()` for a kernel
+without app bootloaders), the hook `RouterBootloader` uses too. Both orders pinned by
+`BootloaderTest::testTheCheckerIsRegisteredWhenTheValidatorIsBootedInAnotherList`. A validator config already
+delivered before that callback would make `modify()` throw `ConfigDeliveredException` — nothing in Spiral reads it
+that early.
 
 ## `git archive` drops the tests
 
@@ -28,6 +32,13 @@ Without `Spiral\Bootloader\Attributes\AttributesBootloader` the filter injection
 fixture `HttpTestBootloader` lists it. `ValueObjectBootloader` does not, to leave the application's attribute
 reader configuration alone.
 
+## Enum filter errors are Spiral's, and name the enum class
+
+`EnumCaster` is registered first (`initCasterRegistry()`, private) and `CasterRegistry::register()` only appends —
+keyed by class, an overwrite keeps the position, there is no prepend or remove. Claiming enums before it would need
+rebinding the `CasterRegistryInterface` singleton, which an application may own, so we do not (fix-round ruling).
+Workaround documented in the README: `#[CastingErrorMessage]` on the property.
+
 ## Spiral's `DefaultCaster` leaks class names
 
 Without this caster a value-object property gets "Unable to set value. Cannot assign string to property
@@ -41,9 +52,9 @@ refused. Composites work from a JSON body (numbers) or a JSON text field (`locat
 
 ## Spiral does not bind backed enums from route parameters
 
-`/countries/<country>` into `CountryCode $country` is a 400 (the resolver refuses the string). The interceptor leaves
-enums alone as the plan says (filters convert enums through `EnumCaster`; actions do not). Pinned by
-`InterceptorTest::testAnEnumParameterIsLeftToSpiral`.
+`/countries/<country>` into `CountryCode $country` is a 400 without the interceptor (the resolver refuses the
+string). Controller ruling (fix round 1): the interceptor converts backed enums too; an unknown case is a 404.
+Pinned by `InterceptorTest::testABackedEnumParameterBecomesTheCase` / `testAnUnknownEnumCaseIsNotFound`.
 
 ## `Http::handle()` needs the `http` scope
 

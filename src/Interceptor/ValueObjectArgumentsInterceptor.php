@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MSSTC4PHP\ValueObject\Spiral\Interceptor;
 
+use BackedEnum;
 use LogicException;
 use MSSTC4PHP\ValueObject\Exception\InvalidValueObjectException;
 use MSSTC4PHP\ValueObject\Payload\ValueObjectMapper;
@@ -22,8 +23,9 @@ use Spiral\Interceptors\InterceptorInterface;
  * A route parameter becomes the value object the action argument is typed with: `/users/<email>` into
  * `EmailAddress $email`. An invalid value is a TargetCallException::NOT_FOUND, which the router answers with 404.
  *
- * Arguments bind by name, as Spiral's resolver does. Only scalar-backed value objects: a route parameter is one
- * string. Backed enums, builtin, union and intersection types are left to Spiral.
+ * Arguments bind by name, as Spiral's resolver does. Scalar-backed value objects and backed enums (Spiral's resolver
+ * refuses a string for an enum argument with a 400; an unknown case is a 404 here): a route parameter is one string.
+ * Builtin, union and intersection types are left to Spiral.
  */
 final readonly class ValueObjectArgumentsInterceptor implements InterceptorInterface
 {
@@ -59,7 +61,7 @@ final readonly class ValueObjectArgumentsInterceptor implements InterceptorInter
     private function convert(ReflectionFunctionAbstract $function, ReflectionParameter $parameter, ReflectionNamedType $type, mixed $value): mixed
     {
         $class = $type->getName();
-        if ($value === null || $value instanceof $class || enum_exists($class) || !$this->mapper->supports($class)) {
+        if ($value === null || $value instanceof $class || !$this->mapper->supports($class)) {
             return $value;
         }
 
@@ -67,7 +69,7 @@ final readonly class ValueObjectArgumentsInterceptor implements InterceptorInter
             throw $this->unbindable($function, $parameter, 'its payload carries its own constraints');
         }
 
-        if (!$this->mapper->isScalarBacked($class)) {
+        if (!$this->mapper->isScalarBacked($class) && !is_subclass_of($class, BackedEnum::class)) {
             throw $this->unbindable($function, $parameter, 'a route parameter carries a single value, not a composite');
         }
 

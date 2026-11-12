@@ -22,13 +22,20 @@ final class TestKernel extends Kernel
     private static array $bootloaders = [];
 
     /**
+     * @var list<class-string<BootloaderInterface>>
+     */
+    private static array $appBootloaders = [];
+
+    /**
      * A booted application container; nothing is written to disk.
      *
-     * @param list<class-string<BootloaderInterface>> $bootloaders
+     * @param list<class-string<BootloaderInterface>> $bootloaders defineBootloaders()
+     * @param list<class-string<BootloaderInterface>> $appBootloaders defineAppBootloaders(), a separate bootload() call
      */
-    public static function boot(array $bootloaders): Container
+    public static function boot(array $bootloaders, array $appBootloaders = []): Container
     {
         self::$bootloaders = $bootloaders;
+        self::$appBootloaders = $appBootloaders;
         $container = new Container();
         self::create(
             ['root' => sys_get_temp_dir() . '/vo-base-spiral-tests'],
@@ -57,5 +64,14 @@ final class TestKernel extends Kernel
     protected function defineBootloaders(): array
     {
         return self::$bootloaders;
+    }
+
+    /**
+     * @return list<class-string<BootloaderInterface>>
+     */
+    #[Override]
+    protected function defineAppBootloaders(): array
+    {
+        return self::$appBootloaders;
     }
 }

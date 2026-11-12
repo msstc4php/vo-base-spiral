@@ -98,6 +98,13 @@ final class FilterTest extends TestCase
         self::assertSame(['errors' => ['nickname' => 'A bounded string cannot be read from request input.']], $this->json($response));
     }
 
+    public function testATrustedSourceOnlyPropertyRefusesAnEmptyStringToo(): void
+    {
+        $response = $this->post(['email' => 'jane@example.com', 'nickname' => '']);
+
+        self::assertSame(['errors' => ['nickname' => 'A bounded string cannot be read from request input.']], $this->json($response));
+    }
+
     public function testAnEnumPropertyIsStillSpiralsEnumCastersJob(): void
     {
         $valid = $this->post(['email' => 'jane@example.com', 'country' => 'DE']);
