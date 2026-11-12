@@ -6,6 +6,7 @@ Areas under `src/`, one deptrac layer each (the core and Spiral are not layers, 
 |---|---|---|
 | `Bootloader/` | `ValueObjectBootloader` | Filter, Validation |
 | `Filter/` | `ValueObjectCaster` (`CasterInterface`), registered by the bootloader | Internal |
+| `Interceptor/` | `ValueObjectArgumentsInterceptor` (`InterceptorInterface`), registered by the application | Internal |
 | `Internal/` | `TypeLabel` (`@internal`): "email address" for `EmailAddress` | — |
 
 The mapper is a container singleton bound by the bootloader (`SINGLETONS`).

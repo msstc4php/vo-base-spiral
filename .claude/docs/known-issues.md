@@ -22,3 +22,14 @@ App\Filter\X::$email of type App\...\EmailAddress" as its client-facing error. `
 
 `GeoCoordinatesCodec` wants numeric `lat`/`lng`: a form-encoded array (`location[lat]=52.5`) gives strings and is
 refused. Composites work from a JSON body (numbers) or a JSON text field (`location={"lat":52.5,"lng":13.4}`).
+
+## Spiral does not bind backed enums from route parameters
+
+`/countries/<country>` into `CountryCode $country` is a 400 (the resolver refuses the string). The interceptor leaves
+enums alone as the plan says (filters convert enums through `EnumCaster`; actions do not). Pinned by
+`InterceptorTest::testAnEnumParameterIsLeftToSpiral`.
+
+## `Http::handle()` needs the `http` scope
+
+Outside `Container::runScope(new Scope('http'), ...)` the request-scoped bindings (`InputInterface` for filters) are
+missing. `TestKernel::handle()` does this, as the RoadRunner dispatcher does.
