@@ -96,9 +96,9 @@ jobs:
           tools: composer:v2
       - run: composer remove --dev spiral/validator --no-update --no-interaction
       - run: composer update --prefer-dist --no-progress --no-interaction
-      # The validator tests skip themselves; the bootloader, filter and interceptor suites must pass without it.
       - run: vendor/bin/phpunit
 
+  bc-check:
     name: BC check (Roave)
     runs-on: ubuntu-latest
     steps:

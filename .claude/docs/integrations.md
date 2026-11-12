@@ -43,18 +43,19 @@ Spiral core has no package auto-discovery.
 - `AbstractCore::handle()` → `Resolver::resolveArguments()`: by name first (exact case), then by position; a value is
   validated against the parameter type — a string for `EmailAddress` → `InvalidArgumentException` → `ControllerException
   BAD_ARGUMENT` → 400. A `null` match with a default becomes the default (`/optional[/<email>]`).
-- `TargetCallException` codes map in `CoreHandler::mapException()`: `NOT_FOUND`/`BAD_ACTION` → 404, others → 400/401/403/500.
-  The client sees `NotFoundException('Not found')`; our message is only the previous exception.
+- `TargetCallException` codes map in `CoreHandler::mapException()`: `NOT_FOUND`/`BAD_ACTION` → 404, others →
+  400/401/403/500. The client sees `NotFoundException('Not found')`; our message is only the previous exception.
 - A class-typed parameter absent from the matches is autowired from the container by Spiral; the interceptor does not
   touch absent arguments.
 
 ## Validation: the checker
 
-- `ValidatorBootloader::init()` sets the `validator` config defaults (checkers, conditions, aliases);
-  `addChecker()` is just `ConfiguratorInterface::modify('validator', new Append('checkers', $alias, $class))`. The
-  bootloader does that itself in `boot()` when `ConfiguratorInterface::exists('validator')` — true once
-  ValidatorBootloader's init ran (all inits of one `bootload()` call precede all boots) or an `app/config/validator.php`
-  exists; otherwise it retries once in `Kernel::appBooted()` / `AbstractKernel::booted()`. Without it nothing is touched (`modify()` on a missing section would try to load the file and fail).
+- `ValidatorBootloader::init()` sets the `validator` config defaults (checkers, conditions, aliases); `addChecker()` is
+  just `ConfiguratorInterface::modify('validator', new Append('checkers', $alias, $class))`. The bootloader does that
+  itself in `boot()` when `ConfiguratorInterface::exists('validator')` — true once ValidatorBootloader's init ran (all
+  inits of one `bootload()` call precede all boots) or an `app/config/validator.php` exists; otherwise it retries once
+  in `Kernel::appBooted()` / `AbstractKernel::booted()`. Without it nothing is touched (`modify()` on a missing section
+  would try to load the file and fail).
 - Rules: `RuleParser::parseArgs()` drops index 0 but keeps the other indexes, so `['vo:valid', Foo::class]` gives
   `$args = [1 => Foo::class]`. `AbstractChecker::check()` `array_unshift`s the value, which reindexes: `valid($value,
   $class)`. `getMessage()` receives the un-reindexed `[1 => Foo::class]` — hence `reset()`.

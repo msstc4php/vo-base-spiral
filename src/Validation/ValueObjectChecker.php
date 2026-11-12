@@ -30,12 +30,12 @@ final class ValueObjectChecker extends AbstractChecker
     }
 
     /**
-     * @throws LogicException when request input cannot build a $class: unsupported, or trusted-source only (BoundedString)
+     * @throws LogicException when request input cannot build a $class (unsupported, or trusted-source only)
      */
     public function valid(mixed $value, string $class): bool
     {
         if (!$this->mapper->supportsUntrusted($class) || !class_exists($class)) {
-            // A trusted-source-only payload (BoundedString's bounds) carries its own constraints: input would choose them.
+            // BoundedString's payload carries its own bounds: request input would choose them.
             throw new LogicException($this->mapper->supports($class) ? \sprintf('vo:valid does not validate %s from request input: its payload carries its own constraints.', $class) : \sprintf('vo:valid cannot validate %s: it is neither a scalar-backed value object, a backed enum nor a class with a payload codec.', $class));
         }
 

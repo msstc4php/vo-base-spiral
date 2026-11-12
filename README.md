@@ -64,7 +64,9 @@ final class AppBootloader extends Bootloader
 {
     public function defineSingletons(): array
     {
-        return [ValueObjectMapper::class => static fn (): ValueObjectMapper => new ValueObjectMapper([new MoneyCodec()])];
+        return [
+            ValueObjectMapper::class => static fn (): ValueObjectMapper => new ValueObjectMapper([new MoneyCodec()]),
+        ];
     }
 }
 ```
@@ -165,13 +167,15 @@ $pipeline = new PipelineBuilder()
     ->withInterceptors($container->get(ValueObjectArgumentsInterceptor::class))
     ->build(new AutowireHandler($container));
 
-$router->setRoute('user', new Route('/users/<email>', new Action(UserController::class, 'show')->withHandler($pipeline)));
+$action = new Action(UserController::class, 'show')->withHandler($pipeline);
+$router->setRoute('user', new Route('/users/<email>', $action));
 // or with the routing configurator: $routes->add('user', '/users/<email>')->action(...)->core($pipeline);
 ```
 
 - Arguments bind by name, exactly as Spiral binds route parameters. Scalar-backed value objects and backed enums
-  (`/countries/<country>` → `CountryCode $country`; an unknown case is a 404): a route parameter is one string. An argument typed with a composite (`GeoCoordinates`) or a trusted-source-only class
-  (`BoundedString`) is a `LogicException` naming the argument — a programmer error, found on the first request.
+  (`/countries/<country>` → `CountryCode $country`; an unknown case is a 404): a route parameter is one string. An
+  argument typed with a composite (`GeoCoordinates`) or a trusted-source-only class (`BoundedString`) is a
+  `LogicException` naming the argument — a programmer error, found on the first request.
 - `null` (an absent optional segment, `/users[/<email>]`) stays `null`, so `?EmailAddress $email = null` works; `''`
   is `null` for a nullable argument and a 404 otherwise. An argument that already is an instance passes through.
 - Union types (`EmailAddress|string $id`) and builtins are left to Spiral. Without the interceptor Spiral answers 400

@@ -18,8 +18,8 @@ use Spiral\Validator\Config\ValidatorConfig;
 
 /**
  * Binds the shared ValueObjectMapper, registers the filter caster and, when spiral/validator's ValidatorBootloader is
- * loaded (in any of the kernel's bootloader lists), the `vo` checker. An application bootloader listed after this one may rebind the mapper to add codecs:
- * Spiral runs every bootloader's init phase before any boot().
+ * loaded (in any of the kernel's bootloader lists), the `vo` checker. An application bootloader listed after this one
+ * may rebind the mapper to add codecs: Spiral runs every bootloader's init phase before any boot().
  */
 final class ValueObjectBootloader extends Bootloader
 {
