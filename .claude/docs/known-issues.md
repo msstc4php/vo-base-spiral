@@ -11,9 +11,22 @@ listed before `ValueObjectBootloader` is silently replaced by the plain mapper. 
 an earlier `bootload()` call. When it is not yet (ours in `defineBootloaders()`, ValidatorBootloader in
 `defineAppBootloaders()`), registration is deferred to `Kernel::appBooted()` (`AbstractKernel::booted()` for a kernel
 without app bootloaders), the hook `RouterBootloader` uses too. Both orders pinned by
-`BootloaderTest::testTheCheckerIsRegisteredWhenTheValidatorIsBootedInAnotherList`. A validator config already
-delivered before that callback would make `modify()` throw `ConfigDeliveredException` — nothing in Spiral reads it
-that early.
+`BootloaderTest::testTheCheckerIsRegisteredWhenTheValidatorIsBootedInAnotherList`.
+
+## Validator config delivered before the deferred registration
+
+If an app bootloader takes `ValidatorConfig` in its `boot()` (injection creates the config object), the config is
+frozen before `appBooted()` runs and `modify()` throws `ConfigDeliveredException`. The bootloader turns that into a
+`LogicException` with the remedy: list `ValueObjectBootloader` in the same list as `ValidatorBootloader`, or call
+`ValidatorBootloader::addChecker('vo', ValueObjectChecker::class)` yourself. Pinned by
+`BootloaderTest::testAValidatorConfigDeliveredBeforeTheDeferredRegistrationIsALogicExceptionWithTheRemedy`.
+`ConfigDeliveredException` is itself a `LogicException` subclass (via `PatchException`).
+
+## A trusted-source-only argument on an optional route segment
+
+Before the final-review fix, `?BoundedString $name = null` on `/x[/<name>]` passed silently without the segment
+(`null` returned before the trust check) and was a 500 with it. Trust is now checked first: the argument is a
+`LogicException` on every request (`InterceptorTest`, "optional segment absent").
 
 ## `git archive` drops the tests
 

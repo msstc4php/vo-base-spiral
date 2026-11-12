@@ -84,6 +84,7 @@ final class InterceptorTest extends TestCase
     public static function unbindable(): iterable
     {
         yield 'trusted-source only' => ['/bounded/jane', \sprintf('Argument $name of %s::bounded() cannot be bound from a route: its payload carries its own constraints.', RouteController::class)];
+        yield 'trusted-source only, optional segment absent' => ['/optional-bounded', \sprintf('Argument $name of %s::optionalBounded() cannot be bound from a route: its payload carries its own constraints.', RouteController::class)];
         yield 'composite' => ['/locations/52.5,13.4', \sprintf('Argument $location of %s::location() cannot be bound from a route: a route parameter carries a single value, not a composite.', RouteController::class)];
     }
 

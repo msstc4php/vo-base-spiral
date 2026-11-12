@@ -78,4 +78,12 @@ final class RouteController
     {
         return Described::value($location);
     }
+
+    /**
+     * @return array{type: string, value: mixed}
+     */
+    public function optionalBounded(?BoundedString $name = null): array
+    {
+        return Described::value($name);
+    }
 }

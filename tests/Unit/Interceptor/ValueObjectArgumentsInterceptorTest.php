@@ -123,6 +123,14 @@ final class ValueObjectArgumentsInterceptorTest extends TestCase
         $this->intercept('bounded', ['name' => 'jane']);
     }
 
+    public function testATrustedSourceOnlyArgumentIsAProgrammerErrorEvenWhenNull(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(\sprintf('Argument $name of %s::optionalBounded() cannot be bound from a route: its payload carries its own constraints.', RouteController::class));
+
+        $this->intercept('optionalBounded', ['name' => null]);
+    }
+
     public function testACompositeArgumentIsAProgrammerError(): void
     {
         $this->expectException(LogicException::class);

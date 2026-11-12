@@ -9,6 +9,10 @@ namespace MSSTC4PHP\ValueObject\Spiral\Internal;
  */
 final class TypeLabel
 {
+    private function __construct()
+    {
+    }
+
     /**
      * EmailAddress becomes "email address": client-facing messages never name a class.
      *

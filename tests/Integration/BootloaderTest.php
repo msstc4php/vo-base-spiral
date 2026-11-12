@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MSSTC4PHP\ValueObject\Spiral\Tests\Integration;
 
+use LogicException;
 use MSSTC4PHP\ValueObject\Network\QueryParameter;
 use MSSTC4PHP\ValueObject\Payload\ValueObjectMapper;
 use MSSTC4PHP\ValueObject\Spiral\Bootloader\ValueObjectBootloader;
@@ -11,6 +12,7 @@ use MSSTC4PHP\ValueObject\Spiral\Filter\ValueObjectCaster;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Codec\CodecBootloader;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Filter\CastTarget;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Kernel\TestKernel;
+use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Kernel\ValidatorConfigReaderBootloader;
 use MSSTC4PHP\ValueObject\Spiral\Validation\ValueObjectChecker;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -128,5 +130,14 @@ final class BootloaderTest extends TestCase
 
         self::assertIsArray($checkers);
         self::assertSame(ValueObjectChecker::class, $checkers['vo'] ?? null);
+    }
+
+    #[RequiresMethod(ValidatorBootloader::class, 'addChecker')]
+    public function testAValidatorConfigDeliveredBeforeTheDeferredRegistrationIsALogicExceptionWithTheRemedy(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('List ValueObjectBootloader in the same bootloader list as ValidatorBootloader');
+
+        TestKernel::boot([ValueObjectBootloader::class], [ValidatorBootloader::class, ValidatorConfigReaderBootloader::class]);
     }
 }

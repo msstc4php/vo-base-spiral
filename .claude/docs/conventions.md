@@ -23,6 +23,12 @@ the composite check exempts them.
 The caster checks `supportsUntrusted()` before the `''`-on-nullable shortcut: a `BoundedString` property refuses
 every input, `''` included. The interceptor and the checker check trust first as well.
 
+## `TypeLabel`
+
+Byte-identical algorithm to the Laravel/Yii2 copies (final-review ruling: no acronym splitting, which would make the
+bridges' messages diverge; no core class has consecutive capitals). Private constructor like Yii2's copy; Laravel's
+copy has none.
+
 ## Tests
 
 - `tests/Unit` — each class with real Spiral objects but no kernel; this is what Infection runs (`--testsuite=unit`).

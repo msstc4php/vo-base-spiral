@@ -26,6 +26,8 @@ use Spiral\Interceptors\InterceptorInterface;
  * Arguments bind by name, as Spiral's resolver does. Scalar-backed value objects and backed enums (Spiral's resolver
  * refuses a string for an enum argument with a 400; an unknown case is a 404 here): a route parameter is one string.
  * Builtin, union and intersection types are left to Spiral.
+ *
+ * List it before any interceptor that reads the arguments: after it, they are value objects, no longer strings.
  */
 final readonly class ValueObjectArgumentsInterceptor implements InterceptorInterface
 {
@@ -61,7 +63,7 @@ final readonly class ValueObjectArgumentsInterceptor implements InterceptorInter
     private function convert(ReflectionFunctionAbstract $function, ReflectionParameter $parameter, ReflectionNamedType $type, mixed $value): mixed
     {
         $class = $type->getName();
-        if ($value === null || $value instanceof $class || !$this->mapper->supports($class)) {
+        if ($value instanceof $class || !$this->mapper->supports($class)) {
             return $value;
         }
 
@@ -73,7 +75,7 @@ final readonly class ValueObjectArgumentsInterceptor implements InterceptorInter
             throw $this->unbindable($function, $parameter, 'a route parameter carries a single value, not a composite');
         }
 
-        if ($value === '' && $type->allowsNull()) {
+        if ($value === null || ($value === '' && $type->allowsNull())) {
             return null;
         }
 

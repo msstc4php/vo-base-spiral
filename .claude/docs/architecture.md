@@ -8,7 +8,7 @@ Areas under `src/`, one deptrac layer each (the core and Spiral are not layers, 
 | `Filter/` | `ValueObjectCaster` (`CasterInterface`), registered by the bootloader | Internal |
 | `Interceptor/` | `ValueObjectArgumentsInterceptor` (`InterceptorInterface`), registered by the application | Internal |
 | `Validation/` | `ValueObjectChecker` (`spiral/validator` `AbstractChecker`), alias `vo`, registered by the bootloader when the validator config exists | Internal |
-| `Internal/` | `TypeLabel` (`@internal`): "email address" for `EmailAddress` | — |
+| `Internal/` | `TypeLabel` (`@internal`, private constructor): "email address" for `EmailAddress` | — |
 
 ## The mapper
 
@@ -22,3 +22,9 @@ bootloader listed **after** `ValueObjectBootloader` (pinned by
 All three input paths call `fromUntrustedPayload()`. Trusted-source-only classes (`BoundedString`): the caster claims
 and refuses them (a field error), the interceptor and the checker treat them as a programmer error (`LogicException`).
 Composites: caster and checker decode JSON text; the interceptor refuses them as argument types.
+
+Why the caster gives a 422 and not a `LogicException` (final-review ruling, as the spec says "claimed and refused as a
+field error"): a filter is the request body's contract, so a refused field is reported like any other invalid field,
+next to the other fields' errors, and the Symfony bundle's normalizer does the same. A route argument or a `vo:valid`
+rule naming `BoundedString` can never succeed for any request, so it is a configuration mistake, surfaced on the first
+request. All three check trust before `null`/`''` shortcuts, so no input reaches a `BoundedString`.

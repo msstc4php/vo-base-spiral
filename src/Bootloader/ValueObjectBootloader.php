@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MSSTC4PHP\ValueObject\Spiral\Bootloader;
 
+use LogicException;
 use MSSTC4PHP\ValueObject\Payload\ValueObjectMapper;
 use MSSTC4PHP\ValueObject\Spiral\Filter\ValueObjectCaster;
 use MSSTC4PHP\ValueObject\Spiral\Validation\ValueObjectChecker;
@@ -11,6 +12,7 @@ use Spiral\Boot\AbstractKernel;
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Bootloader\Security\FiltersBootloader;
 use Spiral\Config\ConfiguratorInterface;
+use Spiral\Config\Exception\ConfigDeliveredException;
 use Spiral\Config\Patch\Append;
 use Spiral\Filters\Model\Mapper\CasterRegistryInterface;
 use Spiral\Framework\Kernel;
@@ -61,6 +63,10 @@ final class ValueObjectBootloader extends Bootloader
      */
     private static function registerChecker(ConfiguratorInterface $config): void
     {
-        $config->modify(ValidatorConfig::CONFIG, new Append('checkers', self::CHECKER_ALIAS, ValueObjectChecker::class));
+        try {
+            $config->modify(ValidatorConfig::CONFIG, new Append('checkers', self::CHECKER_ALIAS, ValueObjectChecker::class));
+        } catch (ConfigDeliveredException $exception) {
+            throw new LogicException(\sprintf('The "%s" checker cannot be registered: the validator config was already delivered. List ValueObjectBootloader in the same bootloader list as ValidatorBootloader, or register it yourself with ValidatorBootloader::addChecker(\'%1$s\', %s::class).', self::CHECKER_ALIAS, ValueObjectChecker::class), $exception->getCode(), previous: $exception);
+        }
     }
 }

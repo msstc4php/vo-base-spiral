@@ -117,6 +117,8 @@ With Spiral's `ValidationHandlerMiddleware` in the pipeline, `{"email": "nope", 
   nullable property `null` and is invalid for a non-nullable one. An instance of the class is kept as it is.
 - `BoundedString` is always refused ("A bounded string cannot be read from request input."): its payload would let
   the client choose the bounds. Type the property `string` and validate the length instead, or use `NonEmptyString`.
+  It is a field error here, reported with the other fields; the interceptor and `vo:valid` treat a `BoundedString`
+  argument or rule as a programmer error (`LogicException`), since no request could ever satisfy it.
 - Backed enums (`CountryCode`, ...) stay with Spiral's own `EnumCaster`, which registers first and cannot be
   reordered without replacing Spiral's caster registry. Its error text is Spiral's: "Unable to set enum value." followed
   by PHP's `from()` message, which names the enum class. Put `#[CastingErrorMessage('Not a valid country.')]` on an
@@ -138,6 +140,8 @@ $router->setRoute('user', new Route('/users/<email>', new Action(UserController:
 ```
 
 `/users/jane@example.com` calls `show(EmailAddress::from('jane@example.com'))`; `/users/nope` is a 404.
+
+List it before any interceptor that reads the arguments: after it they are value objects, no longer strings.
 
 Globally, through the domain core of your application:
 
