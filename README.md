@@ -66,6 +66,8 @@ final class AppBootloader extends Bootloader
     {
         return [
             ValueObjectMapper::class => static fn (): ValueObjectMapper => new ValueObjectMapper([new MoneyCodec()]),
+            // a package's whole set through its ProvidesCodecs class, e.g. vo-documents' composite names:
+            // new ValueObjectMapper(\MSSTC4PHP\ValueObject\Documents\Codecs::all())
         ];
     }
 }
