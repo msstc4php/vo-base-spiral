@@ -12,6 +12,8 @@ use MSSTC4PHP\ValueObject\Primitive\Percentage;
 use MSSTC4PHP\ValueObject\Spiral\Bootloader\ValueObjectBootloader;
 use MSSTC4PHP\ValueObject\Spiral\Filter\ValueObjectCaster;
 use MSSTC4PHP\ValueObject\Spiral\Internal\TypeLabel;
+use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\Code;
+use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\LongCode;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Http\HttpTestBootloader;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Kernel\TestKernel;
 use Nyholm\Psr7\ServerRequest;
@@ -26,6 +28,7 @@ use Psr\Http\Message\ResponseInterface;
 #[CoversClass(ValueObjectCaster::class)]
 #[UsesClass(ValueObjectBootloader::class)]
 #[UsesClass(TypeLabel::class)]
+#[UsesClass(Code::class)]
 final class FilterTest extends TestCase
 {
     public function testAValidValueBecomesTheValueObject(): void
@@ -40,6 +43,7 @@ final class FilterTest extends TestCase
             'location' => ['type' => 'null', 'value' => null],
             'country' => ['type' => 'null', 'value' => null],
             'nickname' => ['type' => 'null', 'value' => null],
+            'code' => ['type' => 'null', 'value' => null],
         ], $this->json($response));
     }
 
@@ -80,6 +84,16 @@ final class FilterTest extends TestCase
         $expected = ['type' => GeoCoordinates::class, 'value' => ['lat' => 52.52, 'lng' => 13.405]];
         self::assertSame($expected, $fromText['location'] ?? null);
         self::assertSame($expected, $fromArray['location'] ?? null);
+    }
+
+    public function testAnAbstractTypeResolvingItsConcreteClassBecomesTheSubclassTheValueFits(): void
+    {
+        $valid = $this->post(['email' => 'jane@example.com', 'code' => 'abcd']);
+        $invalid = $this->post(['email' => 'jane@example.com', 'code' => 'abcdefg']);
+
+        self::assertSame(['type' => LongCode::class, 'value' => 'abcd'], $this->json($valid)['code'] ?? null);
+        self::assertSame(422, $invalid->getStatusCode());
+        self::assertSame(['errors' => ['code' => 'The value is not a valid code.']], $this->json($invalid));
     }
 
     public function testMalformedCompositeJsonIsAFieldError(): void

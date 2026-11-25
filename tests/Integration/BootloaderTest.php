@@ -9,8 +9,12 @@ use MSSTC4PHP\ValueObject\Network\QueryParameter;
 use MSSTC4PHP\ValueObject\Payload\ValueObjectMapper;
 use MSSTC4PHP\ValueObject\Spiral\Bootloader\ValueObjectBootloader;
 use MSSTC4PHP\ValueObject\Spiral\Filter\ValueObjectCaster;
+use MSSTC4PHP\ValueObject\Spiral\Interceptor\ValueObjectArgumentsInterceptor;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Codec\CodecBootloader;
+use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Codec\CodecSetBootloader;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Filter\CastTarget;
+use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Http\RecordingHandler;
+use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Http\RouteController;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Kernel\TestKernel;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Kernel\ValidatorConfigReaderBootloader;
 use MSSTC4PHP\ValueObject\Spiral\Validation\ValueObjectChecker;
@@ -26,12 +30,15 @@ use Spiral\Config\ConfiguratorInterface;
 use Spiral\Filters\Model\FilterProviderInterface;
 use Spiral\Filters\Model\Mapper\CasterRegistryInterface;
 use Spiral\Filters\Model\Mapper\EnumCaster;
+use Spiral\Interceptors\Context\CallContext;
+use Spiral\Interceptors\Context\Target;
 use Spiral\Validator\Bootloader\ValidatorBootloader;
 use Spiral\Validator\Config\ValidatorConfig;
 
 #[CoversClass(ValueObjectBootloader::class)]
 #[UsesClass(ValueObjectCaster::class)]
 #[UsesClass(ValueObjectChecker::class)]
+#[UsesClass(ValueObjectArgumentsInterceptor::class)]
 final class BootloaderTest extends TestCase
 {
     public function testTheMapperIsAContainerSingleton(): void
@@ -103,6 +110,33 @@ final class BootloaderTest extends TestCase
         self::assertTrue($caster->supports($type));
         self::assertInstanceOf(ValueObjectChecker::class, $checker);
         self::assertTrue($checker->valid('{"name":"page","value":"2"}', QueryParameter::class));
+    }
+
+    /**
+     * Every component is built with the container's mapper; probing them with a class only AppCodecs makes readable
+     * proves they all got the rebound one.
+     */
+    #[RequiresMethod(ValidatorBootloader::class, 'addChecker')]
+    public function testAMapperBuiltFromAProvidesCodecsSetInALaterBootloaderReachesEveryComponent(): void
+    {
+        $container = TestKernel::boot([ValidatorBootloader::class, ValueObjectBootloader::class, CodecSetBootloader::class]);
+
+        $registry = $container->get(CasterRegistryInterface::class);
+        self::assertInstanceOf(CasterRegistryInterface::class, $registry);
+        $caster = $registry->getCasters()[array_key_last($registry->getCasters())] ?? null;
+        $type = new ReflectionProperty(CastTarget::class, 'parameter')->getType();
+        $checker = $container->get(ValueObjectChecker::class);
+        $interceptor = $container->get(ValueObjectArgumentsInterceptor::class);
+
+        self::assertInstanceOf(ValueObjectCaster::class, $caster);
+        self::assertInstanceOf(ReflectionNamedType::class, $type);
+        self::assertTrue($caster->supports($type));
+        self::assertInstanceOf(ValueObjectChecker::class, $checker);
+        self::assertTrue($checker->valid('{"name":"page","value":"2"}', QueryParameter::class));
+        self::assertInstanceOf(ValueObjectArgumentsInterceptor::class, $interceptor);
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('a route parameter carries a single value, not a composite');
+        $interceptor->intercept(new CallContext(Target::fromPair(RouteController::class, 'parameter'), ['parameter' => 'page=2']), new RecordingHandler());
     }
 
     /**

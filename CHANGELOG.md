@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.0.0] - unreleased
+
+First stable release: from here on a breaking change needs 2.0. What 1.x covers is listed in the README,
+"Backward compatibility": the four classes and their constructors with their parameter names, the `vo` alias and the
+`vo:valid` rule, the rule's translation key and `{type}` placeholder, the input forms, and which exception each path
+throws. Not covered: message wording otherwise and anything `@internal`.
+
+### Changed
+
+- Requires `msstc4php/vo-base` ^1.4 (was ^1.1): an abstract class implementing `ResolvesConcreteClass` is a valid
+  filter property, route argument and `vo:valid` class, and a mapper built from a `ProvidesCodecs` set
+  (`new ValueObjectMapper(Codecs::all())`) in a later bootloader reaches the caster, the interceptor and the checker;
+  both are tested.
+- `Filter\ValueObjectCaster` stays public and is covered by 1.x, so that an application may register it in a caster
+  registry of its own.
+
+### Upgrading from 0.x
+
+- No code change: the classes, constructors, alias, rule and messages are those of 0.1.
+- Update `msstc4php/vo-base` to ^1.4 if it is pinned lower.
+- Enum filter errors are still Spiral's `EnumCaster` text, which names the enum class; put
+  `#[CastingErrorMessage('...')]` on an enum property whose errors reach clients.
+
 ## 0.1.0 - 2026-11-12
 
 First release. New integration, so no stability promise before 1.0.

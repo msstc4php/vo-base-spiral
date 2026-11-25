@@ -4,6 +4,7 @@
 
 | Package | Highest | Lowest (`--prefer-lowest --prefer-stable`) |
 |---|---|---|
+| `msstc4php/vo-base` | 1.4.1 (path repo, `dev-main as 1.4.1` in composer-local.json) | 1.4.0 (CI only) |
 | `spiral/framework` | 3.18.2 | 3.18.0 |
 | `spiral/validator` | 1.8.0 | 1.8.0 |
 | `nyholm/psr7` (dev) | 1.8.2 | 1.8.0 |

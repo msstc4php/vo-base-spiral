@@ -24,12 +24,13 @@ Neither this package nor the core is on Packagist yet, so register both GitHub r
         { "type": "vcs", "url": "https://github.com/msstc4php/vo-base-spiral" }
     ],
     "require": {
-        "msstc4php/vo-base-spiral": "^0.1"
+        "msstc4php/vo-base-spiral": "^1.0"
     }
 }
 ```
 
-Requires PHP >= 8.4 and `spiral/framework` ^3.18. `spiral/validator` ^1.8 is optional (the `vo:valid` rule).
+Requires PHP >= 8.4, `msstc4php/vo-base` ^1.4 and `spiral/framework` ^3.18. `spiral/validator` ^1.8 is optional (the
+`vo:valid` rule).
 
 Spiral has no package auto-discovery: add the bootloader to your kernel:
 
@@ -219,6 +220,49 @@ final class ContactFilter extends Filter implements HasFilterDefinition
 
 Persisting value objects in Cycle ORM entities is [`msstc4php/vo-base-cycle`][cycle]'s job; Spiral's container injects
 the same bound `ValueObjectMapper` into its typecast handler.
+
+## Backward compatibility
+
+1.x follows semantic versioning; a breaking change needs 2.0. Covered by 1.x:
+
+- **Code API:** these classes, their constructors with these parameter names (named arguments) and the methods of the
+  Spiral interfaces they implement:
+  - `Bootloader\ValueObjectBootloader`, with `CHECKER_ALIAS = 'vo'`; it loads `FiltersBootloader`, binds
+    `ValueObjectMapper` as a singleton (rebindable by a bootloader listed after it), registers the filter caster and,
+    when `ValidatorBootloader` is loaded, the checker;
+  - `Interceptor\ValueObjectArgumentsInterceptor` `(ValueObjectMapper $mapper)`, registered by the application;
+  - `Filter\ValueObjectCaster` `(ValueObjectMapper $mapper)`, public so that an application may register it in a
+    caster registry of its own;
+  - `Validation\ValueObjectChecker` `(ValueObjectMapper $mapper)`, its method `valid(mixed $value, string $class)`
+    and its `MESSAGES` and `ALLOW_EMPTY_VALUES` constants.
+- **Names users write:** the checker alias `vo` and the rule `['vo:valid', X::class]`; the container id
+  `ValueObjectMapper::class`, which the caster, the interceptor and the checker are built with.
+- **Messages:** the `vo:valid` translation key `[[The value is not a valid {type}.]]` and its `{type}` placeholder.
+  Changing that default text needs 2.0, or a new key with the old one kept.
+- **Input forms:** a scalar-backed value object reads a string or number, a composite an array or JSON text, a
+  backed enum its code. These are vo-base's payload forms, the same the Symfony bundle and the other bridges read.
+- **Exceptions:**
+  - `Spiral\Filters\Exception\SetterException`, the property's field error (422), for invalid filter input and for a
+    trusted-source-only property (`BoundedString`);
+  - `Spiral\Interceptors\Exception\TargetCallException` with code `NOT_FOUND` (404) for an invalid route argument;
+  - `LogicException` for configuration errors: a caster property not typed with a single class, a route argument
+    typed with a composite or a trusted-source-only class, a `vo:valid` rule for a class request input cannot build,
+    and a validator config delivered before the checker could be registered.
+
+  The previous exception of a field error or a 404 is vo-base's own exception (or the `JsonException` of malformed
+  composite JSON), passed through unchanged.
+- **Enums:** filter properties typed with a backed enum stay with Spiral's `EnumCaster`, whose error text is Spiral's
+  and names the enum class (`#[CastingErrorMessage]` replaces it, see Filters); the interceptor binds backed enums
+  itself (an unknown case is a 404); `vo:valid` validates them.
+- **Versions:** a minor may add support for a new Spiral or PHP major; dropping a supported Spiral or PHP version needs
+  a major, and so does raising the floor of any third-party dependency (Spiral, `spiral/validator`, PHP). A minor may
+  raise the floor of a `msstc4php/*` package within its major (those follow the same promise).
+
+A minor never refuses a value an earlier 1.x accepted: the caster, the interceptor and the checker add no validation of
+their own, the value objects (vo-base and the domain packages) decide, and they follow the same rule.
+
+Not covered: exception message wording (the package's messages name a type label, a field or an argument, never the
+value), except the translation key above; anything marked `@internal` (`Internal\TypeLabel`).
 
 ## Development
 

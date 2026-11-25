@@ -10,6 +10,7 @@ use MSSTC4PHP\ValueObject\Identity\EmailAddress;
 use MSSTC4PHP\ValueObject\Network\Port;
 use MSSTC4PHP\ValueObject\Primitive\BoundedString;
 use MSSTC4PHP\ValueObject\Primitive\Percentage;
+use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\Code;
 use Spiral\Filters\Attribute\Input\Post;
 use Spiral\Filters\Model\Filter;
 
@@ -32,4 +33,7 @@ final class SignupFilter extends Filter
 
     #[Post]
     public ?BoundedString $nickname = null;
+
+    #[Post]
+    public ?Code $code = null;
 }

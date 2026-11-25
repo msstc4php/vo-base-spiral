@@ -8,7 +8,9 @@ use MSSTC4PHP\ValueObject\Geo\GeoCoordinates;
 use MSSTC4PHP\ValueObject\I18n\CountryCode;
 use MSSTC4PHP\ValueObject\Identity\EmailAddress;
 use MSSTC4PHP\ValueObject\Network\Port;
+use MSSTC4PHP\ValueObject\Network\QueryParameter;
 use MSSTC4PHP\ValueObject\Primitive\BoundedString;
+use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\Code;
 
 /**
  * Actions typed the ways a route argument can be; each answers what it received.
@@ -85,5 +87,23 @@ final class RouteController
     public function optionalBounded(?BoundedString $name = null): array
     {
         return Described::value($name);
+    }
+
+    /**
+     * @return array{type: string, value: mixed}
+     */
+    public function code(Code $code): array
+    {
+        return Described::value($code);
+    }
+
+    /**
+     * Unsupported by the default mapper (left alone), a composite once a codec reads it (unbindable).
+     *
+     * @return array{type: string, value: mixed}
+     */
+    public function parameter(QueryParameter $parameter): array
+    {
+        return Described::value($parameter);
     }
 }

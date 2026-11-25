@@ -14,6 +14,9 @@ use MSSTC4PHP\ValueObject\Payload\ValueObjectMapper;
 use MSSTC4PHP\ValueObject\Primitive\Percentage;
 use MSSTC4PHP\ValueObject\Spiral\Filter\ValueObjectCaster;
 use MSSTC4PHP\ValueObject\Spiral\Internal\TypeLabel;
+use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\Code;
+use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\LongCode;
+use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\ShortCode;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Filter\CastTarget;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -25,6 +28,7 @@ use Spiral\Filters\Exception\SetterException;
 
 #[CoversClass(ValueObjectCaster::class)]
 #[UsesClass(TypeLabel::class)]
+#[UsesClass(Code::class)]
 final class ValueObjectCasterTest extends TestCase
 {
     /**
@@ -37,6 +41,7 @@ final class ValueObjectCasterTest extends TestCase
         yield 'int-backed' => ['port', true];
         yield 'float-backed' => ['share', true];
         yield 'composite' => ['location', true];
+        yield 'abstract, resolves its concrete class' => ['code', true];
         yield 'trusted-source only, claimed to be refused' => ['nickname', true];
         yield 'backed enum, left to EnumCaster' => ['country', false];
         yield 'value object without a payload form' => ['parameter', false];
@@ -63,6 +68,18 @@ final class ValueObjectCasterTest extends TestCase
         self::assertEquals(EmailAddress::from('jane@example.com'), $target->email);
         self::assertEquals(Port::from(8080), $target->port);
         self::assertEquals(Percentage::from(12.5), $target->share);
+    }
+
+    public function testAnAbstractTypeResolvingItsConcreteClassBecomesTheSubclassTheValueFits(): void
+    {
+        $short = new CastTarget();
+        $long = new CastTarget();
+
+        $this->cast($short, 'code', 'abc');
+        $this->cast($long, 'code', 'abcd');
+
+        self::assertEquals(ShortCode::from('abc'), $short->code);
+        self::assertEquals(LongCode::from('abcd'), $long->code);
     }
 
     public function testAnInstanceOfTheTypePassesThroughUntouched(): void
@@ -111,6 +128,7 @@ final class ValueObjectCasterTest extends TestCase
         yield 'composite from JSON that is not an object' => ['location', '"52.52"', 'The value is not a valid geo coordinates.'];
         yield 'composite with a nested array' => ['location', ['lat' => [1], 'lng' => 2], 'The value is not a valid geo coordinates.'];
         yield 'composite out of range' => ['location', ['lat' => 91, 'lng' => 0], 'The value is not a valid geo coordinates.'];
+        yield 'abstract type, no subclass fits' => ['code', 'abcdefg', 'The value is not a valid code.'];
     }
 
     #[DataProvider('invalidInput')]
@@ -126,6 +144,18 @@ final class ValueObjectCasterTest extends TestCase
                 self::isInstanceOf(InvalidValueObjectException::class),
                 self::isInstanceOf(JsonException::class),
             ));
+        }
+    }
+
+    public function testTheMessageCarriesNoPartOfTheValueWhileTheCauseQuotesIt(): void
+    {
+        try {
+            $this->cast(new CastTarget(), 'email', 'SeCrEt-7f3a');
+            self::fail('Expected a SetterException.');
+        } catch (SetterException $exception) {
+            self::assertSame('The value is not a valid email address.', $exception->getMessage());
+            self::assertInstanceOf(InvalidValueObjectException::class, $exception->getPrevious());
+            self::assertStringContainsString('SeCrEt-7f3a', $exception->getPrevious()->getMessage(), 'The cause quotes the value, so the check above proves redaction.');
         }
     }
 

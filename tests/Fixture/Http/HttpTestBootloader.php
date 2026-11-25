@@ -70,6 +70,7 @@ final class HttpTestBootloader extends Bootloader
             'bounded' => '/bounded/<name>',
             'location' => '/locations/<location>',
             'optionalBounded' => '/optional-bounded[/<name>]',
+            'code' => '/codes/<code>',
         ] as $action => $pattern) {
             $router->setRoute($action, new Route($pattern, new Action(RouteController::class, $action)));
         }

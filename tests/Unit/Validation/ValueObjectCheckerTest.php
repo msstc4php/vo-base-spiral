@@ -14,6 +14,8 @@ use MSSTC4PHP\ValueObject\Payload\ValueObjectMapper;
 use MSSTC4PHP\ValueObject\Primitive\BoundedString;
 use MSSTC4PHP\ValueObject\Primitive\PositiveInt;
 use MSSTC4PHP\ValueObject\Spiral\Internal\TypeLabel;
+use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\Code;
+use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\LongCode;
 use MSSTC4PHP\ValueObject\Spiral\Validation\ValueObjectChecker;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -24,6 +26,7 @@ use Spiral\Validator\Bootloader\ValidatorBootloader;
 
 #[CoversClass(ValueObjectChecker::class)]
 #[UsesClass(TypeLabel::class)]
+#[UsesClass(Code::class)]
 #[RequiresMethod(ValidatorBootloader::class, 'addChecker')]
 final class ValueObjectCheckerTest extends TestCase
 {
@@ -46,6 +49,10 @@ final class ValueObjectCheckerTest extends TestCase
         yield 'composite as an array' => [['lat' => 52.52, 'lng' => 13.405], GeoCoordinates::class, true];
         yield 'composite, malformed JSON' => ['{"lat":', GeoCoordinates::class, false];
         yield 'composite out of range' => [['lat' => 91, 'lng' => 0], GeoCoordinates::class, false];
+        yield 'abstract type, short subclass' => ['abc', Code::class, true];
+        yield 'abstract type, long subclass' => ['abcd', Code::class, true];
+        yield 'abstract type, no subclass fits' => ['abcdefg', Code::class, false];
+        yield 'abstract type, an instance of a subclass' => [LongCode::from('abcd'), Code::class, true];
     }
 
     #[DataProvider('values')]
@@ -82,6 +89,11 @@ final class ValueObjectCheckerTest extends TestCase
     {
         // spiral/validator keeps the rule's own index: the class is argument 1, not 0.
         self::assertSame('The value is not a valid email address.', $this->checker()->getMessage('valid', 'email', 'nope', [1 => EmailAddress::class]));
+    }
+
+    public function testTheMessageCarriesNoPartOfTheValue(): void
+    {
+        self::assertSame('The value is not a valid email address.', $this->checker()->getMessage('valid', 'email', 'SeCrEt-7f3a', [1 => EmailAddress::class]));
     }
 
     public function testAnotherMethodKeepsTheDefaultMessage(): void

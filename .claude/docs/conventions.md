@@ -39,5 +39,12 @@ copy has none.
   application answers. Each test boots a fresh kernel (~5 ms).
 - Infection's initial coverage run covers the integration suite too; mutants are killed by the unit suite, so every
   branch of `src/` has a unit test.
+- vo-base 1.4 fixtures, local so no domain package is needed: `Tests\Fixture\Code\Code` (abstract,
+  `ResolvesConcreteClass`; up to three letters → `ShortCode`, four to six → `LongCode`, label "code"), used as a
+  `CastTarget`/`SignupFilter` property, a `RouteController::code()` argument and a checker class;
+  `Tests\Fixture\Codec\AppCodecs` (`ProvidesCodecs`) bound by `CodecSetBootloader`.
+- Redaction tests (`testTheMessageCarriesNoPartOfTheValueWhileTheCauseQuotesIt`) send `SeCrEt-7f3a` and assert both the
+  exact message and that `getPrevious()` quotes the marker; without the second half the test cannot tell redaction
+  from a cause that happened not to quote the value.
 - Validator-dependent tests carry `#[RequiresMethod(ValidatorBootloader::class, 'addChecker')]`; CI's
   `without-validator` job removes `spiral/validator` and runs the rest.

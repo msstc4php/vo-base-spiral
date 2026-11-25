@@ -12,6 +12,9 @@ use MSSTC4PHP\ValueObject\Network\Port;
 use MSSTC4PHP\ValueObject\Payload\ValueObjectMapper;
 use MSSTC4PHP\ValueObject\Spiral\Interceptor\ValueObjectArgumentsInterceptor;
 use MSSTC4PHP\ValueObject\Spiral\Internal\TypeLabel;
+use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\Code;
+use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\LongCode;
+use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\ShortCode;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Http\RecordingHandler;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Http\RouteController;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -24,6 +27,7 @@ use Spiral\Interceptors\Exception\TargetCallException;
 
 #[CoversClass(ValueObjectArgumentsInterceptor::class)]
 #[UsesClass(TypeLabel::class)]
+#[UsesClass(Code::class)]
 final class ValueObjectArgumentsInterceptorTest extends TestCase
 {
     public function testAScalarArgumentBecomesTheValueObject(): void
@@ -35,6 +39,12 @@ final class ValueObjectArgumentsInterceptorTest extends TestCase
     public function testABackedEnumArgumentBecomesTheCase(): void
     {
         self::assertSame(['country' => CountryCode::DE], $this->intercept('country', ['country' => 'DE']));
+    }
+
+    public function testAnAbstractTypeResolvingItsConcreteClassBecomesTheSubclassTheValueFits(): void
+    {
+        self::assertEquals(['code' => ShortCode::from('abc')], $this->intercept('code', ['code' => 'abc']));
+        self::assertEquals(['code' => LongCode::from('abcd')], $this->intercept('code', ['code' => 'abcd']));
     }
 
     public function testTheOtherArgumentsAndAttributesAreKept(): void
@@ -63,6 +73,7 @@ final class ValueObjectArgumentsInterceptorTest extends TestCase
         yield 'union type' => ['union', ['id' => 'nope']];
         yield 'builtin' => ['plain', ['name' => 'jane']];
         yield 'positional, not by name' => ['email', [0 => 'nope']];
+        yield 'a class the mapper does not read' => ['parameter', ['parameter' => 'page=2']];
     }
 
     /**
@@ -89,6 +100,7 @@ final class ValueObjectArgumentsInterceptorTest extends TestCase
         yield 'empty string for a non-nullable argument' => ['email', ['email' => '']];
         yield 'not a canonical integer' => ['port', ['port' => '08080']];
         yield 'unknown enum case' => ['country', ['country' => 'XX']];
+        yield 'abstract type, no subclass fits' => ['code', ['code' => 'abcdefg']];
     }
 
     /**
@@ -113,6 +125,32 @@ final class ValueObjectArgumentsInterceptorTest extends TestCase
         $this->expectExceptionMessage('The route argument "port" is not a valid port.');
 
         $this->intercept('port', ['port' => 'x']);
+    }
+
+    /**
+     * @return iterable<string, array{non-empty-string, array<string, string>, string}>
+     */
+    public static function secrets(): iterable
+    {
+        yield 'value object' => ['email', ['email' => 'SeCrEt-7f3a'], 'The route argument "email" is not a valid email address.'];
+        yield 'backed enum' => ['country', ['country' => 'SeCrEt-7f3a'], 'The route argument "country" is not a valid country code.'];
+    }
+
+    /**
+     * @param non-empty-string $action
+     * @param array<string, string> $arguments
+     */
+    #[DataProvider('secrets')]
+    public function testTheMessageCarriesNoPartOfTheValueWhileTheCauseQuotesIt(string $action, array $arguments, string $message): void
+    {
+        try {
+            $this->intercept($action, $arguments);
+            self::fail('Expected a TargetCallException.');
+        } catch (TargetCallException $exception) {
+            self::assertSame($message, $exception->getMessage());
+            self::assertInstanceOf(InvalidValueObjectException::class, $exception->getPrevious());
+            self::assertStringContainsString('SeCrEt-7f3a', $exception->getPrevious()->getMessage(), 'The cause quotes the value, so the check above proves redaction.');
+        }
     }
 
     public function testATrustedSourceOnlyArgumentIsAProgrammerError(): void

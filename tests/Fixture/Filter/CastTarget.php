@@ -11,6 +11,7 @@ use MSSTC4PHP\ValueObject\Network\Port;
 use MSSTC4PHP\ValueObject\Network\QueryParameter;
 use MSSTC4PHP\ValueObject\Primitive\BoundedString;
 use MSSTC4PHP\ValueObject\Primitive\Percentage;
+use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\Code;
 use Spiral\Filters\Model\Filter;
 
 /**
@@ -33,6 +34,8 @@ final class CastTarget extends Filter
     public ?BoundedString $optionalNickname = null;
 
     public CountryCode $country;
+
+    public Code $code;
 
     public QueryParameter $parameter;
 

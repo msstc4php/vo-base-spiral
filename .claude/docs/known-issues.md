@@ -73,3 +73,10 @@ Pinned by `InterceptorTest::testABackedEnumParameterBecomesTheCase` / `testAnUnk
 
 Outside `Container::runScope(new Scope('http'), ...)` the request-scoped bindings (`InputInterface` for filters) are
 missing. `TestKernel::handle()` does this, as the RoadRunner dispatcher does.
+
+## 1.0 policy: floors and the bc-check
+
+Raising the floor of a third-party dependency (Spiral, `spiral/validator`, PHP) needs a major; a `msstc4php/*` floor
+may rise in a minor (controller ruling O10, same wording in all five bridges). 1.0 changed no `src/` signature, so the
+first Roave bc-check on the 1.0.0 commit (base v0.1.0) has nothing to report. composer-local.json must alias the
+sibling as `dev-main as 1.4.1` (or later): with the old `as 1.1.0` the `^1.4` floor does not resolve.
