@@ -264,8 +264,8 @@ the same bound `ValueObjectMapper` into its typecast handler.
 A minor never refuses a value an earlier 1.x accepted: the caster, the interceptor and the checker add no validation of
 their own, the value objects (vo-base and the domain packages) decide, and they follow the same rule.
 
-Not covered: exception message wording (the package's messages name a type label, a field or an argument, never the
-value), except the translation key above; anything marked `@internal` (`Internal\TypeLabel`).
+Not covered: exception message wording (the package's messages name classes, type labels, fields, arguments or methods,
+never the value), except the translation key above; anything marked `@internal` (`Internal\TypeLabel`).
 
 ## Development
 
