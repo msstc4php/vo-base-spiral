@@ -12,7 +12,6 @@ use MSSTC4PHP\ValueObject\Network\Port;
 use MSSTC4PHP\ValueObject\Payload\ValueObjectMapper;
 use MSSTC4PHP\ValueObject\Spiral\Interceptor\ValueObjectArgumentsInterceptor;
 use MSSTC4PHP\ValueObject\Spiral\Internal\TypeLabel;
-use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\Code;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\LongCode;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\ShortCode;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Http\RecordingHandler;
@@ -27,7 +26,6 @@ use Spiral\Interceptors\Exception\TargetCallException;
 
 #[CoversClass(ValueObjectArgumentsInterceptor::class)]
 #[UsesClass(TypeLabel::class)]
-#[UsesClass(Code::class)]
 final class ValueObjectArgumentsInterceptorTest extends TestCase
 {
     public function testAScalarArgumentBecomesTheValueObject(): void

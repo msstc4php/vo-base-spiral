@@ -11,8 +11,8 @@ use MSSTC4PHP\ValueObject\Network\Port;
 use MSSTC4PHP\ValueObject\Primitive\Percentage;
 use MSSTC4PHP\ValueObject\Spiral\Bootloader\ValueObjectBootloader;
 use MSSTC4PHP\ValueObject\Spiral\Filter\ValueObjectCaster;
+use MSSTC4PHP\ValueObject\Spiral\Interceptor\ValueObjectArgumentsInterceptor;
 use MSSTC4PHP\ValueObject\Spiral\Internal\TypeLabel;
-use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\Code;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\LongCode;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Http\HttpTestBootloader;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Kernel\TestKernel;
@@ -26,9 +26,9 @@ use Psr\Http\Message\ResponseInterface;
  * A filter property typed with a value object, through the whole HTTP stack: input → filter → 422 or the action.
  */
 #[CoversClass(ValueObjectCaster::class)]
+#[UsesClass(ValueObjectArgumentsInterceptor::class)]
 #[UsesClass(ValueObjectBootloader::class)]
 #[UsesClass(TypeLabel::class)]
-#[UsesClass(Code::class)]
 final class FilterTest extends TestCase
 {
     public function testAValidValueBecomesTheValueObject(): void

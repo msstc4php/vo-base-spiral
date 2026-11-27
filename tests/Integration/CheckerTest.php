@@ -10,6 +10,7 @@ use MSSTC4PHP\ValueObject\Network\QueryParameter;
 use MSSTC4PHP\ValueObject\Primitive\BoundedString;
 use MSSTC4PHP\ValueObject\Spiral\Bootloader\ValueObjectBootloader;
 use MSSTC4PHP\ValueObject\Spiral\Filter\ValueObjectCaster;
+use MSSTC4PHP\ValueObject\Spiral\Interceptor\ValueObjectArgumentsInterceptor;
 use MSSTC4PHP\ValueObject\Spiral\Internal\TypeLabel;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Http\HttpTestBootloader;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Kernel\TestKernel;
@@ -32,6 +33,7 @@ use Spiral\Validator\FilterDefinition;
 #[CoversClass(ValueObjectChecker::class)]
 #[UsesClass(ValueObjectBootloader::class)]
 #[UsesClass(ValueObjectCaster::class)]
+#[UsesClass(ValueObjectArgumentsInterceptor::class)]
 #[UsesClass(TypeLabel::class)]
 #[RequiresMethod(ValidatorBootloader::class, 'addChecker')]
 final class CheckerTest extends TestCase

@@ -14,7 +14,6 @@ use MSSTC4PHP\ValueObject\Payload\ValueObjectMapper;
 use MSSTC4PHP\ValueObject\Primitive\Percentage;
 use MSSTC4PHP\ValueObject\Spiral\Filter\ValueObjectCaster;
 use MSSTC4PHP\ValueObject\Spiral\Internal\TypeLabel;
-use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\Code;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\LongCode;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\ShortCode;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Filter\CastTarget;
@@ -28,7 +27,6 @@ use Spiral\Filters\Exception\SetterException;
 
 #[CoversClass(ValueObjectCaster::class)]
 #[UsesClass(TypeLabel::class)]
-#[UsesClass(Code::class)]
 final class ValueObjectCasterTest extends TestCase
 {
     /**

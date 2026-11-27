@@ -12,7 +12,6 @@ use MSSTC4PHP\ValueObject\Spiral\Bootloader\ValueObjectBootloader;
 use MSSTC4PHP\ValueObject\Spiral\Filter\ValueObjectCaster;
 use MSSTC4PHP\ValueObject\Spiral\Interceptor\ValueObjectArgumentsInterceptor;
 use MSSTC4PHP\ValueObject\Spiral\Internal\TypeLabel;
-use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\Code;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Code\ShortCode;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Http\GlobalInterceptorBootloader;
 use MSSTC4PHP\ValueObject\Spiral\Tests\Fixture\Http\HttpTestBootloader;
@@ -34,7 +33,6 @@ use Spiral\Exceptions\ExceptionHandlerInterface;
 #[UsesClass(ValueObjectBootloader::class)]
 #[UsesClass(ValueObjectCaster::class)]
 #[UsesClass(TypeLabel::class)]
-#[UsesClass(Code::class)]
 final class InterceptorTest extends TestCase
 {
     public function testARouteParameterBecomesTheValueObject(): void

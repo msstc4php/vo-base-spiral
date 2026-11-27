@@ -26,7 +26,6 @@ use Spiral\Validator\Bootloader\ValidatorBootloader;
 
 #[CoversClass(ValueObjectChecker::class)]
 #[UsesClass(TypeLabel::class)]
-#[UsesClass(Code::class)]
 #[RequiresMethod(ValidatorBootloader::class, 'addChecker')]
 final class ValueObjectCheckerTest extends TestCase
 {
