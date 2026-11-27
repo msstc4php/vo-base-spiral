@@ -3,9 +3,10 @@
 ## [1.0.0] - unreleased
 
 First stable release: from here on a breaking change needs 2.0. What 1.x covers is listed in the README,
-"Backward compatibility": the four classes and their constructors with their parameter names, the `vo` alias and the
+"Backward compatibility": the four classes, the constructors of the three that have one, with their parameter names, the `vo` alias and the
 `vo:valid` rule, the rule's translation key and `{type}` placeholder, the input forms, and which exception each path
-throws. Not covered: message wording otherwise and anything `@internal`.
+throws. Not covered: message wording otherwise and anything `@internal`. `spiral/validator` below 1.8 now conflicts
+(it was never supported).
 
 ### Changed
 

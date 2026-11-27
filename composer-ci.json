@@ -40,6 +40,9 @@
         "roave/security-advisories": "dev-latest",
         "spiral/validator": "^1.8"
     },
+    "conflict": {
+        "spiral/validator": "<1.8"
+    },
     "suggest": {
         "msstc4php/vo-base-cycle": "Stores value objects in Cycle ORM entities",
         "spiral/validator": "Enables the vo:valid checker"

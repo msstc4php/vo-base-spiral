@@ -225,8 +225,9 @@ the same bound `ValueObjectMapper` into its typecast handler.
 
 1.x follows semantic versioning; a breaking change needs 2.0. Covered by 1.x:
 
-- **Code API:** these classes, their constructors with these parameter names (named arguments) and the methods of the
-  Spiral interfaces they implement:
+- **Code API:** these classes, their constructors with these parameter names (named arguments), the methods of the
+  Spiral interfaces and base classes they implement (including `ValueObjectBootloader::boot()` as Spiral calls it;
+  its parameters are injected by Spiral and are not covered):
   - `Bootloader\ValueObjectBootloader`, with `CHECKER_ALIAS = 'vo'`; it loads `FiltersBootloader`, binds
     `ValueObjectMapper` as a singleton (rebindable by a bootloader listed after it), registers the filter caster and,
     when `ValidatorBootloader` is loaded, the checker;
@@ -249,14 +250,16 @@ the same bound `ValueObjectMapper` into its typecast handler.
     typed with a composite or a trusted-source-only class, a `vo:valid` rule for a class request input cannot build,
     and a validator config delivered before the checker could be registered.
 
-  The previous exception of a field error or a 404 is vo-base's own exception (or the `JsonException` of malformed
-  composite JSON), passed through unchanged.
+  The previous exception of a field error for invalid input or of a 404 is vo-base's own exception (or the
+  `JsonException` of malformed composite JSON), passed through unchanged; the field error of a trusted-source-only
+  property has no previous exception.
 - **Enums:** filter properties typed with a backed enum stay with Spiral's `EnumCaster`, whose error text is Spiral's
   and names the enum class (`#[CastingErrorMessage]` replaces it, see Filters); the interceptor binds backed enums
   itself (an unknown case is a 404); `vo:valid` validates them.
 - **Versions:** a minor may add support for a new Spiral or PHP major; dropping a supported Spiral or PHP version needs
   a major, and so does raising the floor of any third-party dependency (Spiral, `spiral/validator`, PHP). A minor may
-  raise the floor of a `msstc4php/*` package within its major (those follow the same promise).
+  raise the floor of a `msstc4php/*` package within its major (those follow the same promise). The `spiral/validator`
+  floor (1.8) is enforced by a `conflict` entry, since the package is optional.
 
 A minor never refuses a value an earlier 1.x accepted: the caster, the interceptor and the checker add no validation of
 their own, the value objects (vo-base and the domain packages) decide, and they follow the same rule.

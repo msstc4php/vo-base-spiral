@@ -12,7 +12,7 @@ Areas under `src/`, one deptrac layer each (the core and Spiral are not layers, 
 
 ## Public surface (1.0)
 
-Frozen by the README "Backward compatibility" section: the four classes with their constructors, `CHECKER_ALIAS`,
+Frozen by the README "Backward compatibility" section: the four classes (three with a constructor), `CHECKER_ALIAS`,
 the rule `vo:valid`, the checker's `MESSAGES` key `[[The value is not a valid {type}.]]` with `{type}` and
 `ALLOW_EMPTY_VALUES`. `ValueObjectCaster` stays public on purpose (owner ruling O5: an application may build its own
 caster registry); only `Internal\TypeLabel` is `@internal`. Message wording other than that key is not covered.
